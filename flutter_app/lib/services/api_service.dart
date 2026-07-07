@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const _baseUrlKey = 'api_base_url';
-  static const _defaultUrl = 'https://lexbot-api.onrender.com';
+  static const _defaultUrl = 'https://lexbot-zhsl.onrender.com';
 
   static Future<String> getBaseUrl() async {
     final prefs = await SharedPreferences.getInstance();
