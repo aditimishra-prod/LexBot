@@ -1,14 +1,13 @@
 """
-Email service for Cura — sends via Resend API (HTTP, works on Render free tier).
+Email service — sends via Resend API (HTTP, works on Render free tier).
 
 Required env vars:
-    RESEND_API_KEY         — API key from resend.com
-    RESEND_FROM            — sender address (must be verified in Resend dashboard)
-                             e.g. "Cura <cura@yourdomain.com>"
-                             For testing without a domain, use Resend's default:
-                             "Cura <onboarding@resend.dev>"
+    RESEND_API_KEY          — API key from resend.com
+    RESEND_FROM             — sender address (must be verified in Resend dashboard)
+                              e.g. "LexBot <lexbot@yourdomain.com>"
+                              For testing without a domain, use Resend's default:
+                              "LexBot <onboarding@resend.dev>"
     DIGEST_EMAIL_RECIPIENTS — comma-separated recipient emails
-                              e.g. "mehmathur@gmail.com,gmataditi2023@gmail.com"
 """
 
 from __future__ import annotations
@@ -32,7 +31,7 @@ def send_email(subject: str, html_body: str, text_body: str = "") -> bool:
     import resend
 
     api_key    = os.environ.get("RESEND_API_KEY")
-    from_addr  = os.environ.get("RESEND_FROM", "Cura <onboarding@resend.dev>")
+    from_addr  = os.environ.get("RESEND_FROM", "LexBot <onboarding@resend.dev>")
     recipients = get_recipients()
 
     if not api_key:

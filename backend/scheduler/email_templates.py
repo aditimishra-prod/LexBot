@@ -1,5 +1,5 @@
 """
-HTML email templates for Cura digests.
+HTML email templates for LexBot digests.
 Dark theme matching the app palette.
 """
 
@@ -42,19 +42,8 @@ _BASE = """\
         <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td>
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="vertical-align:middle;">
-                    <img src="https://raw.githubusercontent.com/aditimishra-11/cura/main/flutter_app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png"
-                         width="36" height="36"
-                         alt="Cura"
-                         style="display:block;border-radius:10px;" />
-                  </td>
-                  <td style="vertical-align:middle;padding-left:10px;">
-                    <span style="color:{accent};font-size:16px;font-weight:700;letter-spacing:-0.3px;">Cura</span>
-                  </td>
-                </tr>
-              </table>
+              <span style="color:{accent};font-size:18px;font-weight:700;letter-spacing:-0.3px;">LexBot</span>
+              <span style="color:{text3};font-size:12px;margin-left:6px;">DPDP Learning Assistant</span>
             </td>
             <td align="right">
               <span style="color:{text3};font-size:12px;">{date_str}</span>
@@ -79,8 +68,7 @@ _BASE = """\
     <tr>
       <td style="padding:20px 32px;border-top:1px solid {border};">
         <p style="margin:0;color:{text3};font-size:11px;text-align:center;">
-          Cura · Your personal knowledge assistant ·
-          <a href="https://knowledge-assistant-enmb.onrender.com" style="color:{accent};text-decoration:none;">Open app</a>
+          LexBot · Your DPDP Act 2023 learning assistant
         </p>
       </td>
     </tr>
@@ -107,12 +95,14 @@ def _base(title, heading, subheading, body, date_str=None):
 def _item_card(title, url, summary, source, category, intent):
     """Single article card."""
     cat_color = {
-        "models":      ACCENT,
-        "launches":    GREEN,
-        "research":    BLUE,
-        "engineering": AMBER,
-        "industry":    TEXT2,
-        "community":   TEXT3,
+        "legal-analysis": ACCENT,
+        "compliance":     GREEN,
+        "research":       BLUE,
+        "education":      AMBER,
+        "practitioner":   TEXT2,
+        "civil-society":  TEXT3,
+        "podcast":        GREEN,
+        "policy":         BLUE,
     }.get(category or "", TEXT3)
 
     return f"""
@@ -129,7 +119,6 @@ def _item_card(title, url, summary, source, category, intent):
           <p style="margin:0 0 8px;font-size:11px;color:{TEXT3};">
             {source}
             {f'&nbsp;·&nbsp;<span style="color:{cat_color}">{category}</span>' if category else ''}
-            {f'&nbsp;·&nbsp;<span style="color:{TEXT3}">{intent}</span>' if intent else ''}
           </p>
           <p style="margin:0;font-size:12px;color:{TEXT2};line-height:1.5;">{summary or ''}</p>
         </td>
@@ -145,45 +134,41 @@ def _section_label(label, color):
     """
 
 
-# ── Template 1: Daily News Digest ─────────────────────────────────────────────
+# ── Template 1: Daily Digest ──────────────────────────────────────────────────
 
 def news_digest_email(items: list[dict]) -> tuple[str, str]:
-    """
-    Returns (subject, html) for the daily news digest email.
-    items: list of ingested news item dicts with url, title, summary,
-           news_source, news_category, intent fields.
-    """
+    """Returns (subject, html) for the daily content digest email."""
     if not items:
         return "", ""
 
-    # Group by category
     by_cat: dict[str, list] = {}
     for item in items:
         cat = item.get("news_category") or item.get("category") or "general"
         by_cat.setdefault(cat, []).append(item)
 
-    cat_order = ["models", "launches", "research", "engineering", "industry", "community", "general"]
+    cat_order  = ["legal-analysis", "compliance", "research", "education", "practitioner", "civil-society", "podcast", "policy", "general"]
     cat_labels = {
-        "models":      ("🤖 Model Releases",   ACCENT),
-        "launches":    ("🚀 Product Launches",  GREEN),
-        "research":    ("📄 Research",          BLUE),
-        "engineering": ("⚙️ Engineering",       AMBER),
-        "industry":    ("📰 Industry",          TEXT2),
-        "community":   ("💬 Community",         TEXT3),
-        "general":     ("📌 General",           TEXT3),
+        "legal-analysis": ("⚖️ Legal Analysis",   ACCENT),
+        "compliance":     ("✅ Compliance",        GREEN),
+        "research":       ("📄 Research",          BLUE),
+        "education":      ("📚 Education",         AMBER),
+        "practitioner":   ("👔 Practitioner",      TEXT2),
+        "civil-society":  ("🏛️ Civil Society",    TEXT3),
+        "podcast":        ("🎙️ Podcast",           GREEN),
+        "policy":         ("📋 Policy",            BLUE),
+        "general":        ("📌 General",           TEXT3),
     }
 
     body_parts = []
     total = len(items)
 
-    # Intro strip
     body_parts.append(f"""
     <table width="100%" cellpadding="0" cellspacing="0"
            style="background:{SURF3};border-radius:8px;margin-bottom:20px;">
       <tr>
         <td style="padding:12px 16px;">
           <p style="margin:0;font-size:13px;color:{GREEN};font-weight:700;">
-            {total} articles saved to your Cura library today
+            {total} DPDP resource{'s' if total > 1 else ''} added to your library today
           </p>
           <p style="margin:4px 0 0;font-size:11px;color:{TEXT3};">
             Topics: {", ".join(by_cat.keys())}
@@ -203,46 +188,40 @@ def news_digest_email(items: list[dict]) -> tuple[str, str]:
                 title    = item.get("title") or item.get("url", ""),
                 url      = item.get("url", ""),
                 summary  = item.get("summary", ""),
-                source   = item.get("news_source") or item.get("source", ""),
+                source   = item.get("source", ""),
                 category = cat,
-                intent   = item.get("intent", ""),
+                intent   = "",
             ))
 
-    date_str  = datetime.now().strftime("%A, %B %d")
-    subject   = f"📰 Cura Daily: {total} AI updates · {date_str}"
-    html      = _base(
+    date_str = datetime.now().strftime("%A, %B %d")
+    subject  = f"📚 LexBot Daily: {total} DPDP updates · {date_str}"
+    html     = _base(
         title      = subject,
-        heading    = f"{total} AI Updates Today",
-        subheading = f"Auto-curated for your knowledge library · {date_str}",
+        heading    = f"{total} DPDP Updates Today",
+        subheading = f"Auto-curated for your DPDP learning · {date_str}",
         body       = "".join(body_parts),
     )
     return subject, html
 
 
-# ── Template 2: Weekly AI PM Briefing ────────────────────────────────────────
+# ── Template 2: Weekly Briefing ───────────────────────────────────────────────
 
 def weekly_briefing_email(digest_message: str, items: list[dict]) -> tuple[str, str]:
-    """
-    Returns (subject, html) for the weekly briefing email.
-    digest_message: GPT-4o synthesised text from generate_digest()
-    items: the 3 unread items surfaced this week
-    """
-    # Convert digest message paragraphs to HTML
+    """Returns (subject, html) for the weekly briefing email."""
     paragraphs = digest_message.strip().split("\n\n")
     message_html = "".join(
         f'<p style="margin:0 0 12px;font-size:13px;color:{TEXT2};line-height:1.6;">{p}</p>'
         for p in paragraphs if p.strip()
     )
 
-    # Item cards
     item_cards = "".join(
         _item_card(
             title    = item.get("title") or item.get("url", ""),
             url      = item.get("url", ""),
             summary  = item.get("summary", ""),
             source   = item.get("source", ""),
-            category = item.get("intent", ""),
-            intent   = item.get("intent", ""),
+            category = item.get("content_type", ""),
+            intent   = item.get("difficulty", ""),
         )
         for item in items
     )
@@ -262,28 +241,14 @@ def weekly_briefing_email(digest_message: str, items: list[dict]) -> tuple[str, 
     <!-- Items -->
     {_section_label("THIS WEEK'S PICKS", ACCENT)}
     {item_cards}
-
-    <!-- CTA -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:20px;">
-      <tr>
-        <td align="center">
-          <a href="https://knowledge-assistant-enmb.onrender.com"
-             style="display:inline-block;background:{ACCENT};color:#0F0E17;
-                    font-size:13px;font-weight:700;padding:10px 28px;
-                    border-radius:8px;text-decoration:none;">
-            Open Cura Library →
-          </a>
-        </td>
-      </tr>
-    </table>
     """
 
     date_str = datetime.now().strftime("%B %d, %Y")
-    subject  = f"📚 Cura Weekly · {date_str}"
+    subject  = f"📚 LexBot Weekly Digest · {date_str}"
     html     = _base(
         title      = subject,
-        heading    = "Your Weekly Knowledge Digest",
-        subheading = f"3 things from your library worth revisiting · {date_str}",
+        heading    = "Your Weekly DPDP Digest",
+        subheading = f"3 resources worth revisiting this week · {date_str}",
         body       = body,
     )
     return subject, html

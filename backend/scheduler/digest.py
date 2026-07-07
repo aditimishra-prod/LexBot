@@ -1,5 +1,5 @@
 """
-Weekly digest + reminder checker — adapted from Cura's scheduler/digest.py.
+Weekly digest + reminder checker.
 OpenAI gpt-4o generates the weekly digest.
 """
 import logging

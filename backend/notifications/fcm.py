@@ -40,7 +40,7 @@ def send_reminder(fcm_token: str, title: str, body: str, item_id: str | None):
         android=messaging.AndroidConfig(
             priority="high",
             notification=messaging.AndroidNotification(
-                channel_id="cura_reminders",
+                channel_id="lexbot_reminders",
                 priority="high",
             ),
         ),

@@ -1,5 +1,5 @@
 """
-Intent-aware RAG for LexBot — adapted from Cura's retrieval/chain.py.
+Intent-aware RAG for LexBot.
 Uses OpenAI gpt-4o for RAG. DPDP-tuned prompts.
 """
 import os

@@ -1,6 +1,6 @@
 """
-Daily DPDP content pipeline — adapted from Cura's news_fetcher.py.
-Replaces AI-news RSS feeds with DPDP-specific sources.
+Daily DPDP content pipeline.
+Fetches DPDP-specific RSS feeds, filters by relevance, and ingests to Supabase.
 Pipeline: fetch RSS + seed URLs → dedup → GPT-4o-mini relevance filter → ingest → push notification.
 
 Triggered by: GET /fetch-content  (external cron at 7 AM IST daily)

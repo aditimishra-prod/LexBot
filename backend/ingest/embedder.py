@@ -1,6 +1,6 @@
 """
 Embedder — generates text-embedding-3-small vectors and stores items in Supabase.
-Repurposed from Cura's ingest/embedder.py — keeps raw_text for future retrieval.
+Generates text-embedding-3-small vectors and stores items in Supabase.
 """
 import os
 from services.langfuse_compat import OpenAI, observe
