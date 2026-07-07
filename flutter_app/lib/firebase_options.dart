@@ -24,11 +24,12 @@ class DefaultFirebaseOptions {
   }
 
   // TODO: Replace all placeholder values with your real Firebase config.
+
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey:            'AIza-REPLACE-ME',
-    appId:             '1:000000000000:android:REPLACE_ME',
-    messagingSenderId: '000000000000',
-    projectId:         'your-firebase-project-id',
-    storageBucket:     'your-firebase-project-id.appspot.com',
+    apiKey: 'AIzaSyCezS9naRCgDeVReCm_jRkWbrAM2i-rm4A',
+    appId: '1:803590597031:android:91b68e69a1431c47d76e82',
+    messagingSenderId: '803590597031',
+    projectId: 'lexbot-b93de',
+    storageBucket: 'lexbot-b93de.firebasestorage.app',
   );
 }
