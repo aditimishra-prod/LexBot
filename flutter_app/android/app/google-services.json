@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "803590597031",
+    "project_id": "lexbot-b93de",
+    "storage_bucket": "lexbot-b93de.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:803590597031:android:91b68e69a1431c47d76e82",
+        "android_client_info": {
+          "package_name": "com.certinal.lexbot"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCezS9naRCgDeVReCm_jRkWbrAM2i-rm4A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

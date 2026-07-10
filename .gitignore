@@ -14,11 +14,8 @@ flutter_app/.flutter-plugins
 flutter_app/.flutter-plugins-dependencies
 flutter_app/android/.gradle/
 flutter_app/android/local.properties
-flutter_app/android/app/google-services.json
-
-# Firebase
+# Firebase — adminsdk key IS secret, google-services.json is safe to commit
 *firebase-adminsdk*.json
-google-services.json
 
 # Misc
 .DS_Store
