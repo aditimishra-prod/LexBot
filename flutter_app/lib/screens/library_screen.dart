@@ -304,23 +304,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     color: _accent,
                     backgroundColor: _surface2,
                     onRefresh: () => _load(reset: true),
-                    child: GridView.builder(
+                    child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.all(10),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 9,
-                        mainAxisSpacing: 9,
-                        childAspectRatio: 0.78,
-                      ),
-                      itemCount: filtered.length + (_hasMore ? 2 : 0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      itemCount: filtered.length + (_hasMore ? 1 : 0),
                       itemBuilder: (_, i) {
                         if (i >= filtered.length) {
                           return _loading
-                              ? const Center(
-                                  child: CircularProgressIndicator(
-                                      color: _accent, strokeWidth: 2))
+                              ? const Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Center(
+                                      child: CircularProgressIndicator(
+                                          color: _accent, strokeWidth: 2)))
                               : const SizedBox.shrink();
                         }
                         return _LibraryCard(
@@ -370,29 +366,21 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 }
 
-// ── Library card ──────────────────────────────────────────────────────────────
+// ── Library card — compact list row ──────────────────────────────────────────
 class _LibraryCard extends StatelessWidget {
   final SavedItem item;
   final VoidCallback onTap;
   const _LibraryCard({required this.item, required this.onTap});
 
   String get _domain {
-    try {
-      return Uri.parse(item.url).host.replaceFirst('www.', '');
-    } catch (_) {
-      return '';
-    }
-  }
-
-  String get _domainInitial {
-    final d = _domain;
-    return d.isEmpty ? '?' : d[0].toUpperCase();
+    try { return Uri.parse(item.url).host.replaceFirst('www.', ''); }
+    catch (_) { return ''; }
   }
 
   Color get _faviconColor {
     const colors = [
       Color(0xFFFF6B35), Color(0xFF1A8CD8), Color(0xFF0A66C2),
-      Color(0xFFA31515), Color(0xFF111111), Color(0xFFCC0000),
+      Color(0xFFA31515), Color(0xFF374151), Color(0xFFCC0000),
       Color(0xFF34D399), Color(0xFF818CF8), Color(0xFFFBBF24),
     ];
     return colors[_domain.hashCode.abs() % colors.length];
@@ -400,155 +388,151 @@ class _LibraryCard extends StatelessWidget {
 
   String _formatDate(String iso) {
     try {
-      final dt   = DateTime.parse(iso).toLocal();
-      final diff = DateTime.now().difference(dt);
-      if (diff.inDays == 0)  return 'today';
-      if (diff.inDays == 1)  return '1d ago';
-      if (diff.inDays < 7)   return '${diff.inDays}d ago';
-      if (diff.inDays < 30)  return '${(diff.inDays / 7).floor()}w ago';
+      final diff = DateTime.now().difference(DateTime.parse(iso).toLocal());
+      if (diff.inDays == 0) return 'today';
+      if (diff.inDays == 1) return '1d ago';
+      if (diff.inDays < 7)  return '${diff.inDays}d ago';
+      if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
       return '${(diff.inDays / 30).floor()}mo ago';
-    } catch (_) {
-      return '';
-    }
+    } catch (_) { return ''; }
   }
 
   @override
   Widget build(BuildContext context) {
-    final typeColor   = _typeColors[item.contentType]  ?? _accent;
-    final typeBg      = _typeBgs[item.contentType]     ?? const Color(0x1AA78BFA);
-    final typeIcon    = _typeIcons[item.contentType]   ?? Icons.label_outline;
-    final diffColor   = _diffColors[item.difficulty]  ?? _text2;
-    final hasReminder = item.remindAt != null && !item.reminderSent;
+    final typeColor = _typeColors[item.contentType] ?? _accent;
+    final typeBg    = _typeBgs[item.contentType]    ?? const Color(0x1AA78BFA);
+    final typeIcon  = _typeIcons[item.contentType]  ?? Icons.label_outline;
+    final diffColor = _diffColors[item.difficulty]  ?? _text2;
 
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(11),
-            decoration: BoxDecoration(
-              color: _surface2,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: _borderSoft),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: _surface2,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: _borderSoft),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left: type icon bubble
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: typeBg,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(typeIcon, color: typeColor, size: 18),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          color: _faviconColor,
-                          borderRadius: BorderRadius.circular(6)),
-                      child: Center(
-                        child: Text(_domainInitial,
-                            style: GoogleFonts.inter(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white)),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Expanded(
-                      child: Text(_domain,
-                          style: GoogleFonts.inter(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: _text3),
-                          overflow: TextOverflow.ellipsis),
-                    ),
-                    Container(
-                        width: 6,
-                        height: 6,
+            const SizedBox(width: 11),
+            // Middle: title + summary
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Domain + date
+                  Row(
+                    children: [
+                      Container(
+                        width: 14, height: 14,
                         decoration: BoxDecoration(
-                            color: typeColor, shape: BoxShape.circle)),
-                  ],
-                ),
-                const SizedBox(height: 7),
-                Text(item.displayTitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w700,
-                        color: _text1,
-                        height: 1.4)),
-                const SizedBox(height: 5),
-                Expanded(
-                  child: Text(item.summary ?? '',
-                      maxLines: 3,
+                          color: _faviconColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _domain.isNotEmpty ? _domain[0].toUpperCase() : '?',
+                            style: const TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(_domain,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                                fontSize: 10.5, color: _text3)),
+                      ),
+                      Text(_formatDate(item.createdAt),
+                          style: GoogleFonts.inter(
+                              fontSize: 10, color: _text3)),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Title
+                  Text(item.displayTitle,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(
-                          fontSize: 10.5, color: _text2, height: 1.4)),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 3),
-                      decoration: BoxDecoration(
-                          color: typeBg,
-                          borderRadius: BorderRadius.circular(7)),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(typeIcon, size: 9, color: typeColor),
-                          const SizedBox(width: 3),
-                          Text(
-                            item.contentType[0].toUpperCase() +
-                                item.contentType.substring(1),
-                            style: GoogleFonts.inter(
-                                fontSize: 9.5,
-                                fontWeight: FontWeight.w700,
-                                color: typeColor,
-                                letterSpacing: 0.4),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Container(
-                        width: 6,
-                        height: 6,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: _text1,
+                          height: 1.3)),
+                  const SizedBox(height: 4),
+                  // Summary
+                  Text(item.summary ?? '',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                          fontSize: 11.5, color: _text2, height: 1.4)),
+                  const SizedBox(height: 7),
+                  // Tags row
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                            color: diffColor, shape: BoxShape.circle)),
-                    const Spacer(),
-                    Text(_formatDate(item.createdAt),
+                            color: typeBg,
+                            borderRadius: BorderRadius.circular(6)),
+                        child: Text(
+                          item.contentType[0].toUpperCase() +
+                              item.contentType.substring(1),
+                          style: GoogleFonts.inter(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: typeColor),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 6, height: 6,
+                        decoration: BoxDecoration(
+                            color: diffColor, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        item.difficulty[0].toUpperCase() +
+                            item.difficulty.substring(1),
                         style: GoogleFonts.inter(
-                            fontSize: 9.5, color: _text3)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          if (hasReminder)
-            Positioned(
-              top: 8,
-              right: 8,
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(7, 2, 7, 2),
-                decoration: BoxDecoration(
-                    color: const Color(0x1AFBBF24),
-                    borderRadius: BorderRadius.circular(8)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.access_time_rounded,
-                        size: 9, color: Color(0xFFFBBF24)),
-                    const SizedBox(width: 3),
-                    Text("Reminder",
-                        style: GoogleFonts.inter(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFFBBF24))),
-                  ],
-                ),
+                            fontSize: 10, color: diffColor),
+                      ),
+                      if (item.remindAt != null && !item.reminderSent) ...[
+                        const SizedBox(width: 8),
+                        const Icon(Icons.access_time_rounded,
+                            size: 11, color: Color(0xFFFBBF24)),
+                        const SizedBox(width: 3),
+                        Text("Reminder",
+                            style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Color(0xFFFBBF24),
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ],
+                  ),
+                ],
               ),
             ),
-        ],
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right_rounded, color: _text3, size: 18),
+          ],
+        ),
       ),
     );
   }
