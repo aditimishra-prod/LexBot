@@ -115,7 +115,10 @@ class _PlanScreenState extends State<PlanScreen> {
           ? const Center(child: CircularProgressIndicator(color: kAccent))
           : _error != null
               ? _ErrorState(error: _error!, onRetry: _loadPlan)
-              : _plan == null || _plan!.containsKey('message')
+              : _plan == null ||
+                    _plan!.containsKey('message') ||
+                    (_plan!['plan_json'] is Map &&
+                     (_plan!['plan_json'] as Map).containsKey('error'))
                   ? _EmptyState(
                       generating: _generating,
                       onGenerate: _generatePlan,

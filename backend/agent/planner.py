@@ -71,10 +71,17 @@ async def generate_weekly_plan(week_start: str) -> dict:
         ],
     )
 
+    raw = msg.choices[0].message.content.strip()
+    # Strip markdown fences if GPT wraps response in ```json ... ```
+    if raw.startswith("```"):
+        raw = raw.split("```", 2)[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.rsplit("```", 1)[0].strip()
     try:
-        plan = json.loads(msg.choices[0].message.content)
+        plan = json.loads(raw)
     except Exception:
-        plan = {"error": "Failed to parse plan", "raw": msg.choices[0].message.content}
+        plan = {"error": "Failed to parse plan", "raw": raw}
 
     # Persist to DB
     supabase.table("plans").upsert(

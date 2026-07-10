@@ -50,6 +50,22 @@ DPDP_RSS_FEEDS = [
         "source":   "DPDPA.com",
         "category": "education",
     },
+    # YouTube channels — RSS feeds for DPDP video content
+    {
+        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCmLGJ3VYBcfRaWbP6JLo_Zg",
+        "source":   "IAPP YouTube",
+        "category": "video",
+    },
+    {
+        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCSpVHeDGr9UbHJSoMdTYqZQ",
+        "source":   "MeitY YouTube",
+        "category": "video",
+    },
+    {
+        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCFHhBsGtXGFbfLBJnU6Fxwg",
+        "source":   "NASSCOM YouTube",
+        "category": "video",
+    },
 ]
 
 # Seed URLs checked daily even if no RSS feed exists
@@ -59,6 +75,8 @@ SEED_URLS = [
     {"url": "https://iapp.org/resources/topics/india-2/",                   "source": "IAPP",        "category": "professional"},
     {"url": "https://www.smritiparsheera.com/research/privacy-surveillance", "source": "Parsheera",  "category": "research"},
     {"url": "https://www.ey.com/en_in/media/podcasts/gateway-to-data-privacy-and-protection", "source": "EY India", "category": "podcast"},
+    # Curated YouTube video playlists
+    {"url": "https://www.youtube.com/playlist?list=PLdo5W4Nhv31b2RoqaUl4EPWjaTtMXj9-G", "source": "DPDP Explainers", "category": "video"},
 ]
 
 RELEVANCE_PROMPT = """\
