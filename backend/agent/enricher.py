@@ -26,11 +26,27 @@ Given a URL, title, and extracted text, return a JSON object with:
 - tags: array of 5 specific DPDP topic tags (lowercase, no spaces)
 - is_dpdp_relevant: true if the content is meaningfully about India's DPDP Act, data protection law, or related compliance topics; false otherwise
 
-Examples:
-- "DPDP Act Section 8 explained" → difficulty: beginner, content_type: article
-- "DPDP Rules 2025 compliance checklist" → difficulty: intermediate
-- "Data Protection Board independence critique" → difficulty: advanced
-- "General tech news" → is_dpdp_relevant: false
+Key DPDP topics to recognise as highly relevant:
+- Data Fiduciary (S.2j) vs Data Processor distinction and liability
+- Data Principal rights: access (S.11), correction/erasure (S.12), grievance redressal (S.13), nomination (S.14)
+- Data Protection Board — structure, independence concerns, Sections 18-19
+- DPDP Rules 2025 — compliance timelines, notices, consent frameworks
+- Consent Managers and the DEPA framework
+- Data localisation provisions
+- Significant Data Fiduciary obligations
+- GDPR vs DPDP comparison
+
+Key authoritative speakers/sources — content from these is automatically high-value:
+- Apar Gupta (IFF) — civil society critique of DPB independence
+- Smriti Parsheera — peer-reviewed research on consent and governance
+- Justice B.N. Srikrishna — chaired the original MeitY expert committee
+- Dr. Prashant Mali — Bombay HC cyber law practitioner
+- K&L Gates, AMS Shardul, Priti Suri & Associates — top DPDP law firms
+
+Difficulty guide:
+- beginner: what is DPDP, who it applies to, basic rights
+- intermediate: compliance checklists, Rules 2025 provisions, Fiduciary obligations
+- advanced: constitutional critique, DPB independence, comparative analysis, enforcement gaps
 
 Return ONLY valid JSON, no markdown fences."""
 

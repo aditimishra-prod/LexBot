@@ -18,65 +18,92 @@ from services.langfuse_compat import observe
 logger = logging.getLogger(__name__)
 
 
-# ── DPDP-specific RSS feeds ───────────────────────────────────────────────────
+# ── Verified DPDP RSS feeds (research-confirmed sources) ─────────────────────
 DPDP_RSS_FEEDS = [
+    # Legal analysis — law firm articles + video explainers
     {
         "url":      "https://www.mondaq.com/rss/india/data-protection",
         "source":   "Mondaq India",
         "category": "legal-analysis",
     },
+    # Civil society — IFF covers DPDP governance gaps, DPB independence
     {
         "url":      "https://internetfreedom.in/rss/",
         "source":   "Internet Freedom Foundation",
         "category": "civil-society",
     },
+    # Civil society — SFLC India
     {
         "url":      "https://sflc.in/feed/",
         "source":   "SFLC India",
         "category": "civil-society",
     },
+    # Education — free long-form explainers on key provisions
     {
         "url":      "https://blog.ipleaders.in/feed/",
         "source":   "iPleaders",
         "category": "education",
     },
+    # Practitioner podcast — "Ex Machina" by Prasanto K Roy; historic episode
+    # with Justice B.N. Srikrishna (who chaired the MeitY expert committee)
     {
         "url":      "https://exmachina.in/feed/",
-        "source":   "Ex Machina",
-        "category": "practitioner",
+        "source":   "Ex Machina Podcast",
+        "category": "podcast",
     },
+    # Education — Dr. Prashant Mali's public-interest DPDP guide
     {
         "url":      "https://www.dpdpa.com/rss.xml",
         "source":   "DPDPA.com",
         "category": "education",
     },
-    # YouTube channels — RSS feeds for DPDP video content
-    {
-        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCmLGJ3VYBcfRaWbP6JLo_Zg",
-        "source":   "IAPP YouTube",
-        "category": "video",
-    },
-    {
-        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCSpVHeDGr9UbHJSoMdTYqZQ",
-        "source":   "MeitY YouTube",
-        "category": "video",
-    },
-    {
-        "url":      "https://www.youtube.com/feeds/videos.xml?channel_id=UCFHhBsGtXGFbfLBJnU6Fxwg",
-        "source":   "NASSCOM YouTube",
-        "category": "video",
-    },
 ]
 
-# Seed URLs checked daily even if no RSS feed exists
+# ── Verified seed URLs (checked daily, no RSS available) ─────────────────────
 SEED_URLS = [
-    {"url": "https://www.amsshardul.com/insights/?category=data-protection", "source": "AMS Shardul", "category": "legal-analysis"},
-    {"url": "https://www.dlapiperdataprotection.com/?t=law&c=IN",           "source": "DLA Piper",   "category": "legal-analysis"},
-    {"url": "https://iapp.org/resources/topics/india-2/",                   "source": "IAPP",        "category": "professional"},
-    {"url": "https://www.smritiparsheera.com/research/privacy-surveillance", "source": "Parsheera",  "category": "research"},
-    {"url": "https://www.ey.com/en_in/media/podcasts/gateway-to-data-privacy-and-protection", "source": "EY India", "category": "podcast"},
-    # Curated YouTube video playlists
-    {"url": "https://www.youtube.com/playlist?list=PLdo5W4Nhv31b2RoqaUl4EPWjaTtMXj9-G", "source": "DPDP Explainers", "category": "video"},
+    # Top Indian law firm — enforcement + DPDP Rules 2025 deep-dives
+    {
+        "url":      "https://www.amsshardul.com/insights/?category=data-protection",
+        "source":   "AMS Shardul",
+        "category": "legal-analysis",
+    },
+    # Global law firm — India DPDP compliance timeline tracker
+    {
+        "url":      "https://www.dlapiperdataprotection.com/?t=law&c=IN",
+        "source":   "DLA Piper",
+        "category": "legal-analysis",
+    },
+    # IAPP — professional-grade curated India DPDP coverage
+    {
+        "url":      "https://iapp.org/resources/topics/india-2/",
+        "source":   "IAPP",
+        "category": "professional",
+    },
+    # Smriti Parsheera — 4+ peer-reviewed critiques on DPA independence,
+    # consent frameworks, grievance redress
+    {
+        "url":      "https://www.smritiparsheera.com/research/privacy-surveillance",
+        "source":   "Smriti Parsheera",
+        "category": "research",
+    },
+    # EY India podcast — Episode 7 covers DPDP Rules 2025 with EY partners
+    {
+        "url":      "https://www.ey.com/en_in/media/podcasts/gateway-to-data-privacy-and-protection",
+        "source":   "EY India Podcast",
+        "category": "podcast",
+    },
+    # Mondaq video series — DPDP explainer videos (Data Fiduciary, Processor, etc.)
+    {
+        "url":      "https://www.mondaq.com/india/data-protection/video",
+        "source":   "Mondaq Video Series",
+        "category": "video",
+    },
+    # Mondaq podcast — "Gateway to Privacy" with K&L Gates + Priti Suri lawyers
+    {
+        "url":      "https://www.mondaq.com/india/data-protection/podcast",
+        "source":   "Mondaq Gateway to Privacy",
+        "category": "podcast",
+    },
 ]
 
 RELEVANCE_PROMPT = """\
