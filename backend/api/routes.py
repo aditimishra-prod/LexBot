@@ -140,6 +140,49 @@ async def message(req: MessageRequest):
             "tags": enriched.get("tags", []),
         }
 
+    # ── Reminder-only message (no URL) → apply to most recent saved item ────────
+    try:
+        remind_at = parse_reminder(text)
+    except Exception:
+        remind_at = None
+
+    if remind_at:
+        try:
+            supabase = _get_supabase()
+            # Find the most recently saved item
+            result = (
+                supabase.table("items")
+                .select("id, title, url")
+                .order("created_at", desc=True)
+                .limit(1)
+                .execute()
+            )
+            if result.data:
+                item = result.data[0]
+                supabase.table("items").update({
+                    "remind_at":     remind_at.isoformat(),
+                    "reminder_sent": False,
+                }).eq("id", item["id"]).execute()
+
+                from urllib.parse import urlparse
+                ist_time   = remind_at.astimezone(IST)
+                item_title = item.get("title") or (
+                    urlparse(item["url"]).netloc.replace("www.", "")
+                    if item.get("url") else "your last saved item"
+                )
+                return {
+                    "response": (
+                        f"⏰ **Reminder set!**\n\n"
+                        f"I'll remind you about **{item_title}** "
+                        f"on **{ist_time.strftime('%A, %b %d at %I:%M %p IST')}**.\n\n"
+                        f"You'll see it in the Reminders tab."
+                    ),
+                    "mode": "reminder",
+                }
+        except Exception as e:
+            logger.error("Follow-up reminder failed: %s", e)
+            # Fall through to RAG if reminder setting fails
+
     # Pure text query → RAG
     try:
         mode = detect_mode(text)
