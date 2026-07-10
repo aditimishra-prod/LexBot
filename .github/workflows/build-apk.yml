@@ -3,7 +3,7 @@ name: Build & Release Android APK
 on:
   push:
     branches: [main]
-  workflow_dispatch:   # allows manual trigger from GitHub UI
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,32 +15,35 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── 2. Java (required by Gradle) ─────────────────────────────────────────
+      # ── 2. Java ───────────────────────────────────────────────────────────────
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
           java-version: "17"
           distribution: "temurin"
 
-      # ── 3. Flutter ────────────────────────────────────────────────────────────
+      # ── 3. Flutter (latest stable, no version pin) ───────────────────────────
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.27.0"
           channel: "stable"
           cache: true
 
-      # ── 4. Dependencies ───────────────────────────────────────────────────────
+      # ── 4. Android SDK — accept licenses ─────────────────────────────────────
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      # ── 5. Install Flutter dependencies ──────────────────────────────────────
       - name: Install Flutter dependencies
         working-directory: flutter_app
         run: flutter pub get
 
-      # ── 5. Build release APK ──────────────────────────────────────────────────
+      # ── 6. Build release APK ──────────────────────────────────────────────────
       - name: Build release APK
         working-directory: flutter_app
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
-      # ── 6. Rename APK with version + date ────────────────────────────────────
+      # ── 7. Rename with date ───────────────────────────────────────────────────
       - name: Rename APK
         run: |
           DATE=$(date +'%Y%m%d')
@@ -48,7 +51,7 @@ jobs:
              LexBot-v1.0-${DATE}.apk
           echo "APK_NAME=LexBot-v1.0-${DATE}.apk" >> $GITHUB_ENV
 
-      # ── 7. Upload as workflow artifact (always available) ─────────────────────
+      # ── 8. Upload as artifact ─────────────────────────────────────────────────
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
@@ -56,8 +59,8 @@ jobs:
           path: ${{ env.APK_NAME }}
           retention-days: 30
 
-      # ── 8. Create a GitHub Release with the APK attached ─────────────────────
-      - name: Delete previous 'latest' release if exists
+      # ── 9. Create GitHub Release ──────────────────────────────────────────────
+      - name: Delete previous latest release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -76,14 +79,7 @@ jobs:
           **Install on Android:**
           1. Download **${{ env.APK_NAME }}** below
           2. Open the file on your Android phone
-          3. If prompted, enable *Install from unknown sources* in Settings → Security
-          4. Tap Install
-
-          **What it does:**
-          - Chat with the DPDP knowledge base
-          - Browse your weekly learning plan
-          - Search the DPDP library
-          - Set reminders for articles
+          3. If prompted, enable *Install from unknown sources* → tap Install
 
           Built from commit \`${{ github.sha }}\` on $(date +'%d %b %Y %H:%M UTC')" \
             --latest
