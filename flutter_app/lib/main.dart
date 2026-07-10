@@ -44,68 +44,76 @@ Future<void> _fcmBackgroundHandler(RemoteMessage message) async {
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor:                    Colors.transparent,
-    statusBarBrightness:               Brightness.dark,
-    statusBarIconBrightness:           Brightness.light,
-    systemNavigationBarColor:          kSurface2,
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
-
-  await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform);
-
-  FirebaseMessaging.onBackgroundMessage(_fcmBackgroundHandler);
-
   if (!kIsWeb) {
-    // flutter_local_notifications is Android/iOS only
-    await _localNotifications.initialize(
-      const InitializationSettings(
-        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-      ),
-    );
+    SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+      statusBarColor:                    Colors.transparent,
+      statusBarBrightness:               Brightness.dark,
+      statusBarIconBrightness:           Brightness.light,
+      systemNavigationBarColor:          kSurface2,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ));
   }
 
-  FirebaseMessaging.onMessage.listen((msg) {
-    final n = msg.notification;
-    if (n == null) return;
+  // Always launch the app — never let Firebase crash block the UI
+  try {
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+
     if (!kIsWeb) {
-      _localNotifications.show(
-        msg.hashCode,
-        n.title,
-        n.body,
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'lexbot_reminders',
-            'LexBot Reminders',
-            importance: Importance.high,
-            priority: Priority.high,
-          ),
+      FirebaseMessaging.onBackgroundMessage(_fcmBackgroundHandler);
+      await _localNotifications.initialize(
+        const InitializationSettings(
+          android: AndroidInitializationSettings('@mipmap/ic_launcher'),
         ),
       );
     }
-    // Web: background messages handled by firebase-messaging-sw.js
-  });
 
-  // Request notification permission
-  await FirebaseMessaging.instance.requestPermission(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+    FirebaseMessaging.onMessage.listen((msg) {
+      final n = msg.notification;
+      if (n == null) return;
+      if (!kIsWeb) {
+        _localNotifications.show(
+          msg.hashCode,
+          n.title,
+          n.body,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'lexbot_reminders',
+              'LexBot Reminders',
+              importance: Importance.high,
+              priority: Priority.high,
+            ),
+          ),
+        );
+      }
+    });
 
-  // Web needs VAPID key; Android uses server key automatically
-  final token = await FirebaseMessaging.instance.getToken(
-    vapidKey: kIsWeb ? _vapidKey : null,
-  );
-  if (token != null) {
-    ApiService.registerDevice(token).catchError((_) {});
+    // Init FCM token in background — don't block app launch
+    _initFcm();
+  } catch (_) {
+    // Firebase failed — app still loads, just no push notifications
   }
-  FirebaseMessaging.instance.onTokenRefresh.listen((t) {
-    ApiService.registerDevice(t).catchError((_) {});
-  });
 
   runApp(const LexBotApp());
+}
+
+Future<void> _initFcm() async {
+  try {
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true, badge: true, sound: true,
+    );
+    final token = await FirebaseMessaging.instance.getToken(
+      vapidKey: kIsWeb ? _vapidKey : null,
+    );
+    if (token != null) {
+      ApiService.registerDevice(token).catchError((_) {});
+    }
+    FirebaseMessaging.instance.onTokenRefresh.listen((t) {
+      ApiService.registerDevice(t).catchError((_) {});
+    });
+  } catch (_) {
+    // Notification setup failed silently — app works without it
+  }
 }
 
 class LexBotApp extends StatelessWidget {
