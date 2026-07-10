@@ -26,12 +26,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: "3.27.0"
-          channel: "stable"
-          cache: true
+      - name: Install Flutter (stable)
+        run: |
+          git clone https://github.com/flutter/flutter.git \
+            --depth 1 -b stable /opt/flutter
+          echo "/opt/flutter/bin" >> $GITHUB_PATH
 
       - name: Install dependencies
         working-directory: flutter_app
