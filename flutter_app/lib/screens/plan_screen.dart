@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -171,9 +170,11 @@ class _PlanScreenState extends State<PlanScreen> {
   }
 
   List<dynamic> _itemsForDay(String dayKey) {
-    final content = _editDays[dayKey] ?? (_hasValidPlan
-        ? (_plan!['plan_json'] as Map)['days']?[dayKey]
-        : null);
+    dynamic content = _editDays[dayKey];
+    if (content == null && _hasValidPlan) {
+      final daysMap = (_plan!['plan_json'] as Map)['days'];
+      if (daysMap is Map) content = daysMap[dayKey];
+    }
     if (content is List) return content;
     if (content is Map && content['items'] is List) {
       return content['items'] as List;
