@@ -78,6 +78,52 @@ def _extract_github(url: str) -> dict:
         return {}
 
 
+_BROWSER_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/125.0.0.0 Safari/537.36"
+    ),
+    "Accept": (
+        "text/html,application/xhtml+xml,application/xml;q=0.9,"
+        "image/avif,image/webp,*/*;q=0.8"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "DNT": "1",
+    "Connection": "keep-alive",
+    "Upgrade-Insecure-Requests": "1",
+}
+
+
+def _fetch_with_requests(url: str) -> str | None:
+    """Fallback: fetch URL using requests with browser-like headers."""
+    try:
+        import requests as _requests
+        resp = _requests.get(
+            url,
+            headers=_BROWSER_HEADERS,
+            timeout=20,
+            allow_redirects=True,
+        )
+        if resp.status_code == 200 and len(resp.content) > 500:
+            return resp.text
+    except Exception:
+        pass
+    return None
+
+
+def _og_title(html: str) -> str | None:
+    """Pull og:title or <title> from raw HTML when trafilatura metadata fails."""
+    m = re.search(r'<meta[^>]+property=["\']og:title["\'][^>]+content=["\'](.*?)["\']', html, re.IGNORECASE)
+    if m:
+        return m.group(1).strip()
+    m = re.search(r'<title[^>]*>(.*?)</title>', html, re.IGNORECASE | re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
 def extract_content(url: str) -> dict:
     url = normalize_url(url)
     source = extract_source(url)
@@ -91,7 +137,13 @@ def extract_content(url: str) -> dict:
     config = use_config()
     config.set("DEFAULT", "EXTRACTION_TIMEOUT", "30")
 
+    # Step 1: trafilatura fetch
     downloaded = trafilatura.fetch_url(url)
+
+    # Step 2: if trafilatura got nothing, try requests with browser headers
+    if not downloaded:
+        downloaded = _fetch_with_requests(url)
+
     if not downloaded:
         return {"url": url, "title": None, "text": None, "source": source}
 
@@ -104,6 +156,17 @@ def extract_content(url: str) -> dict:
     )
 
     metadata = trafilatura.extract_metadata(downloaded)
-    title = metadata.title if metadata else None
+    title = (metadata.title if metadata else None) or _og_title(downloaded)
+
+    # Step 3: if trafilatura extract returned nothing, try with include_everything
+    if not result:
+        result = trafilatura.extract(
+            downloaded,
+            include_comments=False,
+            include_tables=True,
+            no_fallback=True,
+            favor_recall=True,
+            config=config,
+        )
 
     return {"url": url, "title": title, "text": result, "source": source}

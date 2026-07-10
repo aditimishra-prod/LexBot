@@ -129,6 +129,16 @@ class ApiService {
     return jsonDecode(response.body);
   }
 
+  static Future<void> updatePlan(Map<String, dynamic> planJson) async {
+    final base     = await getBaseUrl();
+    final response = await http.patch(
+      Uri.parse('$base/plan/current'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'plan_json': planJson}),
+    ).timeout(const Duration(seconds: 20));
+    if (response.statusCode != 200) throw Exception('Plan save failed');
+  }
+
   // ── Reminders ─────────────────────────────────────────────────────────────
 
   static Future<List<SavedItem>> fetchReminders() async {

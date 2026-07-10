@@ -86,8 +86,13 @@ async def message(req: MessageRequest):
 
         try:
             extracted = extract_content(url)
-            if not extracted.get("text"):
-                raise ValueError("Could not extract content")
+            # Accept minimal text (some paywalled sites return just a few lines)
+            if not extracted.get("text") or len(extracted.get("text", "")) < 40:
+                # Last-resort: use URL + title as synthetic text for GPT enrichment
+                title_guess = extracted.get("title") or url
+                extracted["text"] = f"Title: {title_guess}\nURL: {url}"
+                if len(extracted["text"]) < 40:
+                    raise ValueError("Could not extract content")
 
             enriched = enrich(url, extracted.get("title"), extracted.get("text"))
             stored = store_item(
@@ -252,6 +257,36 @@ async def trigger_plan():
     from agent.planner import generate_weekly_plan
     plan = await generate_weekly_plan(str(date.today()))
     return plan
+
+
+class UpdatePlanRequest(BaseModel):
+    plan_json: dict
+
+
+@router.patch("/plan/current")
+async def update_current_plan(req: UpdatePlanRequest):
+    """Save edited plan_json back to the latest plan row."""
+    from datetime import date
+    today = str(date.today())
+    supabase = _get_supabase()
+    result = (
+        supabase.table("plans")
+        .select("id")
+        .lte("week_start", today)
+        .order("week_start", desc=True)
+        .limit(1)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="No plan found")
+    plan_id = result.data[0]["id"]
+    updated = (
+        supabase.table("plans")
+        .update({"plan_json": req.plan_json})
+        .eq("id", plan_id)
+        .execute()
+    )
+    return updated.data[0] if updated.data else {"status": "ok"}
 
 
 # ── Reminders ─────────────────────────────────────────────────────────────────
