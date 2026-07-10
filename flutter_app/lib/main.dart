@@ -5,15 +5,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
-
-const _vapidKey =
-    'BMlHw_n7fxPEC3rEGrAog7-qVphovRms1sdT7UeYpjK849CQ3pvIDFwmvXEsHE-OuU7o1G0jTs7cBZPjGpy7taE';
 import 'screens/chat_screen.dart';
 import 'screens/plan_screen.dart';
 import 'screens/library_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'services/api_service.dart';
 import 'firebase_options.dart';
+
+// ── VAPID key for web push notifications ──────────────────────────────────────
+const _vapidKey =
+    'BMlHw_n7fxPEC3rEGrAog7-qVphovRms1sdT7UeYpjK849CQ3pvIDFwmvXEsHE-OuU7o1G0jTs7cBZPjGpy7taE';
 
 // ── Design palette ────────────────────────────────────────────────────────────
 const kBg          = Color(0xFF0F0E17);
@@ -69,7 +70,6 @@ Future<void> main() async {
     final n = msg.notification;
     if (n == null) return;
     if (!kIsWeb) {
-      // Show in-app notification on Android
       _localNotifications.show(
         msg.hashCode,
         n.title,
@@ -84,7 +84,7 @@ Future<void> main() async {
         ),
       );
     }
-    // Web: browser handles it via firebase-messaging-sw.js service worker
+    // Web: background messages handled by firebase-messaging-sw.js
   });
 
   // Request notification permission
@@ -94,8 +94,7 @@ Future<void> main() async {
     sound: true,
   );
 
-  // Register FCM token with backend
-  // Web requires VAPID key; Android uses server key automatically
+  // Web needs VAPID key; Android uses server key automatically
   final token = await FirebaseMessaging.instance.getToken(
     vapidKey: kIsWeb ? _vapidKey : null,
   );
@@ -122,22 +121,17 @@ class LexBotApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: base.copyWith(
         colorScheme: const ColorScheme.dark(
-          background:         kBg,
           surface:            kSurface2,
-          surfaceVariant:     kSurface3,
           primary:            kAccent,
           onPrimary:          Colors.white,
           primaryContainer:   kAccentDim,
           onPrimaryContainer: kText1,
           secondary:          kAccentDim,
           onSecondary:        Colors.white,
-          onBackground:       kText1,
           onSurface:          kText1,
-          onSurfaceVariant:   kText2,
           outline:            kText3,
           outlineVariant:     kBorder,
           error:              kRed,
-          errorContainer:     kRedBg,
           onError:            Colors.white,
         ),
         scaffoldBackgroundColor: kBg,
@@ -157,7 +151,7 @@ class LexBotApp extends StatelessWidget {
             statusBarIconBrightness: Brightness.light,
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           color: kSurface2,
           surfaceTintColor: Colors.transparent,
           shape: RoundedRectangleBorder(
@@ -182,7 +176,7 @@ class LexBotApp extends StatelessWidget {
           backgroundColor:  kSurface4,
           contentTextStyle: TextStyle(color: kText1),
         ),
-        dialogTheme: const DialogTheme(
+        dialogTheme: const DialogThemeData(
           backgroundColor: kSurface2,
           surfaceTintColor: Colors.transparent,
         ),
