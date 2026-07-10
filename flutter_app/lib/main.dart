@@ -1,9 +1,13 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+const _vapidKey =
+    'BMlHw_n7fxPEC3rEGrAog7-qVphovRms1sdT7UeYpjK849CQ3pvIDFwmvXEsHE-OuU7o1G0jTs7cBZPjGpy7taE';
 import 'screens/chat_screen.dart';
 import 'screens/plan_screen.dart';
 import 'screens/library_screen.dart';
@@ -52,32 +56,49 @@ Future<void> main() async {
 
   FirebaseMessaging.onBackgroundMessage(_fcmBackgroundHandler);
 
-  await _localNotifications.initialize(
-    const InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
-    ),
-  );
+  if (!kIsWeb) {
+    // flutter_local_notifications is Android/iOS only
+    await _localNotifications.initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      ),
+    );
+  }
 
   FirebaseMessaging.onMessage.listen((msg) {
     final n = msg.notification;
     if (n == null) return;
-    _localNotifications.show(
-      msg.hashCode,
-      n.title,
-      n.body,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'lexbot_default',
-          'LexBot',
-          importance: Importance.high,
-          priority: Priority.high,
+    if (!kIsWeb) {
+      // Show in-app notification on Android
+      _localNotifications.show(
+        msg.hashCode,
+        n.title,
+        n.body,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'lexbot_reminders',
+            'LexBot Reminders',
+            importance: Importance.high,
+            priority: Priority.high,
+          ),
         ),
-      ),
-    );
+      );
+    }
+    // Web: browser handles it via firebase-messaging-sw.js service worker
   });
 
+  // Request notification permission
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
   // Register FCM token with backend
-  final token = await FirebaseMessaging.instance.getToken();
+  // Web requires VAPID key; Android uses server key automatically
+  final token = await FirebaseMessaging.instance.getToken(
+    vapidKey: kIsWeb ? _vapidKey : null,
+  );
   if (token != null) {
     ApiService.registerDevice(token).catchError((_) {});
   }
